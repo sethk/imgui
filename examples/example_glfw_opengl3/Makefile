@@ -16,8 +16,10 @@
 
 EXE = example_glfw_opengl3
 SOURCES = main.cpp
-SOURCES += ../imgui_impl_glfw.cpp ../imgui_impl_opengl3.cpp
-SOURCES += ../../imgui.cpp ../../imgui_demo.cpp ../../imgui_draw.cpp ../../imgui_widgets.cpp
+vpath %.cpp ..
+SOURCES += imgui_impl_glfw.cpp imgui_impl_opengl3.cpp
+vpath %.cpp ../.. ../../misc/cpp
+SOURCES += imgui.cpp imgui_demo_scoped.cpp imgui_draw.cpp imgui_widgets.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
@@ -26,7 +28,8 @@ UNAME_S := $(shell uname -s)
 ##---------------------------------------------------------------------
 
 ## Using OpenGL loader: gl3w [default]
-SOURCES += ../libs/gl3w/GL/gl3w.c
+vpath %.c ../libs/gl3w/GL
+SOURCES += gl3w.c
 CXXFLAGS = -I../libs/gl3w
 
 ## Using OpenGL loader: glew
@@ -34,8 +37,8 @@ CXXFLAGS = -I../libs/gl3w
 # CXXFLAGS = -lGLEW -DIMGUI_IMPL_OPENGL_LOADER_GLEW
 
 ## Using OpenGL loader: glad
-## (You'll also need to change the rule at line ~77 of this Makefile to compile/link glad.c/.o)
-# SOURCES += ../libs/glad/src/glad.c
+# vpath %.c ../lib/glad/src
+# SOURCES += glad.c
 # CXXFLAGS = -I../libs/glad/include -DIMGUI_IMPL_OPENGL_LOADER_GLAD
 
 ##---------------------------------------------------------------------
@@ -59,7 +62,8 @@ ifeq ($(UNAME_S), Darwin) #APPLE
 
 	CXXFLAGS += -I../ -I../../ -I/usr/local/include
 	CXXFLAGS += -Wall -Wformat
-	CFLAGS = $(CXXFLAGS)
+	CFLAGS:= $(CXXFLAGS)
+	CXXFLAGS += -std=c++11
 endif
 
 ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
@@ -77,16 +81,6 @@ endif
 
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-%.o:../%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-%.o:../../%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-%.o:../libs/gl3w/GL/%.c
-# %.o:../libs/glad/src/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
 
 all: $(EXE)
 	@echo Build complete for $(ECHO_MESSAGE)
